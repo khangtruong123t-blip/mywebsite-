@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Speedcube Pro - By Đức Khang | Bấm Giờ & Công Thức Rubik (2x2 - 6x6)</title>
+    <!-- Tải Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font chữ hiện đại & font số Monospace chuẩn đồng hồ điện tử -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        cube: {
+                            bg: '#090d16',
+                            card: '#111827',
+                            border: '#1f2937',
+                            accent: '#3b82f6',
+                            ready: '#10b981',
+                            hold: '#ef4444',
+                            warn: '#f59e0b'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Chống chọn văn bản, chống cuộn nảy và menu chuột phải khi đặt 2 tay lên màn hình điện thoại */
+        body, html {
+            overscroll-behavior: none;
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+            background-color: #090d16;
+            color: #f3f4f6;
+            touch-action: manipulation;
+        }
+
+        /* Tùy chỉnh thanh cuộn gọn gàng */
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #090d16;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #374151;
+            border-radius: 9999px;
+        }
+
+        /* Hiệu ứng phát sáng cho vùng cảm ứng 2 tay */
+        .hand-pad {
+            transition: all 0.15s ease;
+        }
+        .hand-pad.active {
+            transform: scale(0.97);
+            border-color: #ef4444;
+            background: rgba(239, 68, 68, 0.12);
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.25) inset;
+        }
+        .hand-pad.ready {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.15);
+            box-shadow: 0 0 25px rgba(16, 185, 129, 0.35) inset;
+        }
+
+        /* Hiệu ứng chuyển tab mượt */
+        .tab-content {
+            animation: fadeIn 0.2s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between overflow-x-hidden">
+
+    <!-- HEADER & CHỌN KHỐI RUBIK -->
+    <header id="main-header" class="sticky top-0 z-30 bg-[#090d16]/90 backdrop-blur-md border-b border-gray-800 px-3 py-2.5 transition-opacity duration-200">
+        <div class="max-w-3xl mx-auto flex flex-col gap-2">
+            <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2 min-w-0">
+                    <!-- Icon Rubik SVG -->
+                    <div class="w-8 h-8 shrink-0 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
+                        <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="7" height="7" rx="1.5" fill="#ef4444" stroke="none"/>
+                            <rect x="14" y="3" width="7" height="7" rx="1.5" fill="#3b82f6" stroke="none"/>
+                            <rect x="3" y="14" width="7" height="7" rx="1.5" fill="#10b981" stroke="none"/>
+                            <rect x="14" y="14" width="7" height="7" rx="1.5" fill="#f59e0b" stroke="none"/>
+                        </svg>
+                    </div>
+                    <div class="min-w-0">
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            <h1 class="font-extrabold text-sm sm:text-base tracking-tight text-white leading-none">SPEEDCUBE <span class="text-blue-400">PRO</span></h1>
+                            <!-- Huy hiệu tác giả By Đức Khang nổi bật trên Header -->
+                            <span class="px-2 py-0.5 rounded-full bg-gradient-to-r from-blue-600/30 to-indigo-600/30 border border-blue-500/40 text-[10px] font-bold text-blue-300 tracking-wide shadow-sm">
+                                By Đức Khang
+                            </span>
+                        </div>
+                        <span class="text-[11px] text-gray-400 block mt-0.5 truncate">Timer 2 Tay & Công Thức 2x2-6x6</span>
+                    </div>
+                </div>
+
+                <!-- Nút bật/tắt chế độ 1 tay hoặc 2 tay -->
+                <button id="mode-toggle-btn" onclick="toggleTouchMode()" class="shrink-0 px-2.5 py-1.5 rounded-xl bg-gray-800/90 border border-gray-700 text-xs font-semibold text-gray-200 flex items-center gap-1.5 active:scale-95 transition">
+                    <span id="mode-dot" class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                    <span id="mode-label">Chế độ: 2 Tay</span>
+                </button>
+            </div>
+
+            <!-- Thanh chọn loại khối Rubik (2x2 -> 6x6) dùng chung cho cả Timer & Công thức -->
+            <div class="grid grid-cols-5 gap-1.5 bg-gray-900/90 p-1 rounded-xl border border-gray-800" id="cube-selector">
+                <button onclick="selectCube('2x2')" data-cube="2x2" class="cube-btn py-1.5 rounded-lg text-xs sm:text-sm font-bold transition">2x2</button>
+                <button onclick="selectCube('3x3')" data-cube="3x3" class="cube-btn py-1.5 rounded-lg text-xs sm:text-sm font-bold transition">3x3</button>
+                <button onclick="selectCube('4x4')" data-cube="4x4" class="cube-btn py-1.5 rounded-lg text-xs sm:text-sm font-bold transition">4x4</button>
+                <button onclick="selectCube('5x5')" data-cube="5x5" class="cube-btn py-1.5 rounded-lg text-xs sm:text-sm font-bold transition">5x5</button>
+                <button onclick="selectCube('6x6')" data-cube="6x6" class="cube-btn py-1.5 rounded-lg text-xs sm:text-sm font-bold transition">6x6</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- NỘI DUNG CHÍNH -->
+    <main class="flex-1 max-w-3xl w-full mx-auto px-3 pt-2 pb-24 flex flex-col">
+
+        <!-- ========================================================= -->
+        <!-- TAB 1: BẤM GIỜ (STACKMAT 2 TAY)                           -->
+        <!-- ========================================================= -->
+        <section id="tab-timer" class="tab-content flex-1 flex flex-col justify-between gap-3">
+            
+            <!-- Khu vực Scramble (Công thức tráo) -->
+            <div id="scramble-box" class="bg-gray-900/90 border border-gray-800 rounded-2xl p-3 shadow-md transition-opacity duration-200">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-blue-400 flex items-center gap-1">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                        Scramble (<span id="scramble-cube-label">3x3</span>)
+                    </span>
+                    <button onclick="generateNewScramble()" class="text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 px-2.5 py-1 rounded-lg font-medium active:scale-95 transition">
+                        Đổi tráo mới
+                    </button>
+                </div>
+                <p id="scramble-text" class="font-mono text-sm sm:text-base font-bold text-gray-100 leading-relaxed tracking-wide break-words">
+                    R U R' U' F2 D L2 B' R2 U2 F' L2 D2
+                </p>
+            </div>
+
+            <!-- VÙNG CẢM ỨNG ĐỒNG HỒ STACKMAT (TRUNG TÂM) -->
+            <div id="timer-touch-zone" class="relative flex-1 min-h-[290px] sm:min-h-[340px] bg-gray-900/60 border-2 border-gray-800 rounded-3xl flex flex-col justify-between p-4 select-none overflow-hidden transition-colors duration-150">
+                
+                <!-- Đèn LED báo trạng thái Stackmat ở trên cùng -->
+                <div class="flex items-center justify-center gap-4 pt-1">
+                    <div class="flex items-center gap-2 bg-gray-950/80 px-3.5 py-1.5 rounded-full border border-gray-800">
+                        <span id="led-red" class="w-3 h-3 rounded-full bg-red-950 border border-red-800 transition-all"></span>
+                        <span id="led-green" class="w-3 h-3 rounded-full bg-emerald-950 border border-emerald-800 transition-all"></span>
+                        <span id="timer-status-text" class="text-xs font-semibold text-gray-400 ml-1">Đặt 2 tay lên 2 ô dưới để chuẩn bị</span>
+                    </div>
+                </div>
+
+                <!-- Hiển thị số đồng hồ khổng lồ -->
+                <div class="my-auto text-center py-2 pointer-events-none">
+                    <div id="timer-display" class="font-mono text-6xl sm:text-7xl md:text-8xl font-extrabold tracking-tight text-white transition-colors duration-100">
+                        0.000
+                    </div>
+                    <div id="last-solve-actions" class="mt-3 flex items-center justify-center gap-2 pointer-events-auto opacity-0 pointer-events-none transition-opacity">
+                        <button onclick="togglePenalty('+2')" id="btn-plus2" class="px-3 py-1 rounded-lg bg-amber-500/20 border border-amber-500/50 text-amber-300 text-xs font-bold active:scale-95">+2 giây</button>
+                        <button onclick="togglePenalty('DNF')" id="btn-dnf" class="px-3 py-1 rounded-lg bg-red-500/20 border border-red-500/50 text-red-300 text-xs font-bold active:scale-95">DNF</button>
+                        <button onclick="deleteLastSolve()" class="px-3 py-1 rounded-lg bg-gray-800 border border-gray-700 text-gray-300 text-xs font-bold active:scale-95">Xóa lượt này</button>
+                    </div>
+                </div>
+
+                <!-- Hai vùng cảm ứng bàn tay trái & phải (Giống máy bấm giờ Stackmat) -->
+                <div id="hands-container" class="grid grid-cols-2 gap-3 h-28 sm:h-32">
+                    <!-- Bàn tay Trái -->
+                    <div id="pad-left" class="hand-pad rounded-2xl border-2 border-dashed border-gray-700 bg-gray-800/40 flex flex-col items-center justify-center gap-1 pointer-events-none">
+                        <svg class="w-8 h-8 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11"/>
+                        </svg>
+                        <span class="text-xs font-bold text-gray-400">TAY TRÁI</span>
+                    </div>
+
+                    <!-- Bàn tay Phải -->
+                    <div id="pad-right" class="hand-pad rounded-2xl border-2 border-dashed border-gray-700 bg-gray-800/40 flex flex-col items-center justify-center gap-1 pointer-events-none">
+                        <svg class="w-8 h-8 text-gray-400 transform -scale-x-100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11"/>
+                        </svg>
+                        <span class="text-xs font-bold text-gray-400">TAY PHẢI</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Thống kê thành tích & Lịch sử -->
+            <div id="stats-panel" class="bg-gray-900/90 border border-gray-800 rounded-2xl p-3 transition-opacity duration-200">
+                <div class="grid grid-cols-3 gap-2 text-center mb-3">
+                    <div class="bg-gray-950/70 rounded-xl p-2 border border-gray-800/80">
+                        <div class="text-[11px] text-gray-400 font-medium">Tốt nhất (Best)</div>
+                        <div id="stat-best" class="font-mono text-sm sm:text-base font-bold text-emerald-400">--</div>
+                    </div>
+                    <div class="bg-gray-950/70 rounded-xl p-2 border border-gray-800/80">
+                        <div class="text-[11px] text-gray-400 font-medium">TB 5 lần (Ao5)</div>
+                        <div id="stat-ao5" class="font-mono text-sm sm:text-base font-bold text-blue-400">--</div>
+                    </div>
+                    <div class="bg-gray-950/70 rounded-xl p-2 border border-gray-800/80">
+                        <div class="text-[11px] text-gray-400 font-medium">TB 12 lần (Ao12)</div>
+                        <div id="stat-ao12" class="font-mono text-sm sm:text-base font-bold text-purple-400">--</div>
+                    </div>
+                </div>
+
+                <!-- Danh sách lịch sử các lần giải -->
+                <div class="flex items-center justify-between mb-1.5">
+                    <span class="text-xs font-bold text-gray-300">Lịch sử giải (<span id="solve-count">0</span> lần)</span>
+                    <button onclick="openClearModal()" class="text-[11px] text-red-400 hover:text-red-300 font-medium px-2 py-0.5 rounded bg-red-950/40 border border-red-900/40">
+                        Xóa tất cả
+                    </button>
+                </div>
+                <div id="history-list" class="flex gap-2 overflow-x-auto pb-1 min-h-[38px] items-center">
+                    <span class="text-xs text-gray-500 italic">Chưa có thành tích nào cho khối này.</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- TAB 2: CÔNG THỨC & CÁCH GIẢI NHANH (2x2 -> 6x6)           -->
+        <!-- ========================================================= -->
+        <section id="tab-algorithms" class="tab-content hidden flex-col gap-4">
+            
+            <!-- Thẻ hướng dẫn ký hiệu quy ước (Collapsible) -->
+            <div class="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden">
+                <button onclick="toggleNotationGuide()" class="w-full px-4 py-3 flex items-center justify-between text-left bg-gray-800/40">
+                    <div class="flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-xs">?</span>
+                        <span class="font-bold text-sm text-white">Quy ước ký hiệu xoay Rubik (Cơ bản & Big Cubes)</span>
+                    </div>
+                    <svg id="notation-chevron" class="w-4 h-4 text-gray-400 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+                <div id="notation-body" class="hidden p-4 border-t border-gray-800 text-xs text-gray-300 space-y-3">
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                        <div class="bg-gray-950 p-2 rounded-xl border border-gray-800"><strong class="text-blue-400 font-mono text-sm">R</strong> : Mặt Phải (Right)</div>
+                        <div class="bg-gray-950 p-2 rounded-xl border border-gray-800"><strong class="text-blue-400 font-mono text-sm">L</strong> : Mặt Trái (Left)</div>
+                        <div class="bg-gray-950 p-2 rounded-xl border border-gray-800"><strong class="text-blue-400 font-mono text-sm">U</strong> : Mặt Trên (Up)</div>
+                        <div class="bg-gray-950 p-2 rounded-xl border border-gray-800"><strong class="text-blue-400 font-mono text-sm">D</strong> : Mặt Dưới (Down)</div>
+                        <div class="bg-gray-950 p-2 rounded-xl border border-gray-800"><strong class="text-blue-400 font-mono text-sm">F</strong> : Mặt Trước (Front)</div>
+                        <div class="bg-gray-950 p-2 rounded-xl border border-gray-800"><strong class="text-blue-400 font-mono text-sm">B</strong> : Mặt Sau (Back)</div>
+                    </div>
+                    <div class="bg-gray-950 p-2.5 rounded-xl border border-gray-800 space-y-1">
+                        <p>• <strong class="text-amber-400 font-mono">Chữ thường (R)</strong>: Xoay 90° theo chiều kim đồng hồ.</p>
+                        <p>• <strong class="text-amber-400 font-mono">Dấu phẩy (R')</strong>: Xoay 90° ngược chiều kim đồng hồ.</p>
+                        <p>• <strong class="text-amber-400 font-mono">Số 2 (R2)</strong>: Xoay 180° (2 lần).</p>
+                        <p>• <strong class="text-emerald-400 font-mono">Rw / r (4x4 - 6x6)</strong>: Xoay cùng lúc 2 tầng ngoài bên phải (3Rw là 3 tầng bên phải trên 6x6).</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Container chứa nội dung công thức động theo từng loại khối (2x2 -> 6x6) -->
+            <div id="algo-content-container" class="space-y-4">
+                <!-- Được render tự động bằng JavaScript -->
+            </div>
+
+        </section>
+
+        <!-- FOOTER DẤU ẤN TÁC GIẢ BY ĐỨC KHANG -->
+        <footer class="mt-6 pt-3 pb-2 border-t border-gray-800/80 text-center">
+            <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-gray-900/90 border border-gray-800 text-[11px] text-gray-400">
+                <span>Speedcube Pro (2x2 – 6x6)</span>
+                <span class="text-gray-600">•</span>
+                <span class="font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">By Đức Khang</span>
+            </div>
+        </footer>
+
+    </main>
+
+    <!-- THANH ĐIỀU HƯỚNG DƯỚI CÙNG (BOTTOM NAVIGATION BAR) -->
+    <nav id="bottom-nav" class="fixed bottom-0 inset-x-0 z-30 bg-[#090d16]/95 backdrop-blur-lg border-t border-gray-800 px-4 py-2 transition-opacity duration-200">
+        <div class="max-w-md mx-auto grid grid-cols-2 gap-2">
+            <button onclick="switchTab('timer')" id="nav-timer" class="nav-btn flex flex-col items-center justify-center py-2 px-3 rounded-2xl bg-blue-600 text-white font-bold text-xs shadow-lg shadow-blue-600/20 transition">
+                <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span>Bấm Giờ (2 Tay)</span>
+            </button>
+            <button onclick="switchTab('algorithms')" id="nav-algorithms" class="nav-btn flex flex-col items-center justify-center py-2 px-3 rounded-2xl bg-gray-800/80 text-gray-400 hover:text-white font-bold text-xs transition">
+                <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                <span>Công Thức & Cách Giải</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- MODAL XÁC NHẬN XÓA LỊCH SỬ (THAY THẾ CONFIRM()) -->
+    <div id="confirm-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-gray-900 border border-gray-700 rounded-2xl max-w-xs w-full p-5 text-center shadow-2xl">
+            <h3 class="text-base font-bold text-white mb-1">Xóa lịch sử khối <span id="modal-cube-name" class="text-blue-400">3x3</span>?</h3>
+            <p class="text-xs text-gray-400 mb-4">Toàn bộ thời gian đã lưu của khối này sẽ bị xóa vĩnh viễn.</p>
+            <div class="grid grid-cols-2 gap-2">
+                <button onclick="closeClearModal()" class="py-2.5 rounded-xl bg-gray-800 text-gray-300 text-xs font-bold">Hủy</button>
+                <button onclick="confirmClearHistory()" class="py-2.5 rounded-xl bg-red-600 text-white text-xs font-bold">Xóa sạch</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST THÔNG BÁO COPY CÔNG THỨC -->
+    <div id="toast" class="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-emerald-600 text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg opacity-0 pointer-events-none transition-opacity duration-200">
+        Đã sao chép công thức!
+    </div>
+
+    <script>
+        // =========================================================================
+        // 1. TRẠNG THÁI ỨNG DỤNG & LƯU TRỮ CỤC BỘ
+        // =========================================================================
+        let currentCube = localStorage.getItem('sc_current_cube') || '3x3';
+        let currentTab = 'timer';
+        let twoHandsMode = true; // Mặc định bật chế độ đặt 2 tay lên điện thoại
+
+        // Lịch sử lưu theo từng loại khối Rubik
+        let solveHistory = JSON.parse(localStorage.getItem('sc_history_v1')) || {
+            '2x2': [],
+            '3x3': [],
+            '4x4': [],
+            '5x5': [],
+            '6x6': []
+        };
+
+        // Trạng thái bộ đếm giờ Stackmat
+        // IDLE -> HOLDING (đỏ, đang giữ) -> READY (xanh lá, đủ 0.45s) -> RUNNING (đang chạy) -> STOPPED (vừa dừng)
+        let timerState = 'IDLE';
+        let holdTimeout = null;
+        let startTime = 0;
+        let elapsedTime = 0;
+        let animationFrameId = null;
+        let leftHandDown = false;
+        let rightHandDown = false;
+        let currentScramble = '';
+
+        // =========================================================================
+        // 2. BỘ SINH SCRAMBLE CHUẨN WCA CHO 2x2 ĐẾN 6x6
+        // =========================================================================
+        function generateNewScramble() {
+            const configs = {
+                '2x2': { moves: ['R', 'U', 'F'], mods: ['', "'", '2'], len: 9 },
+                '3x3': { moves: ['R', 'L', 'U', 'D', 'F', 'B'], mods: ['', "'", '2'], len: 20 },
+                '4x4': { moves: ['R', 'L', 'U', 'D', 'F', 'B', 'Rw', 'Uw', 'Fw'], mods: ['', "'", '2'], len: 40 },
+                '5x5': { moves: ['R', 'L', 'U', 'D', 'F', 'B', 'Rw', 'Lw', 'Uw', 'Dw', 'Fw', 'Bw'], mods: ['', "'", '2'], len: 55 },
+                '6x6': { moves: ['R', 'L', 'U', 'D', 'F', 'B', 'Rw', 'Lw', 'Uw', 'Dw', 'Fw', 'Bw', '3Rw', '3Uw', '3Fw'], mods: ['', "'", '2'], len: 70 }
+            };
+
+            const cfg = configs[currentCube];
+            const result = [];
+            let lastAxis = '';
+
+            // Xác định trục xoay để tránh sinh 2 nước cùng trục liên tiếp (vd: R R' hoặc R L R)
+            const getAxis = (move) => {
+                if (move.includes('R') || move.includes('L')) return 'X';
+                if (move.includes('U') || move.includes('D')) return 'Y';
+                return 'Z';
+            };
+
+            while (result.length < cfg.len) {
+                const move = cfg.moves[Math.floor(Math.random() * cfg.moves.length)];
+                const axis = getAxis(move);
+                if (axis === lastAxis) continue;
+
+                const mod = cfg.mods[Math.floor(Math.random() * cfg.mods.length)];
+                result.push(move + mod);
+                lastAxis = axis;
+            }
+
+            currentScramble = result.join(' ');
+            document.getElementById('scramble-text').textContent = currentScramble;
+            document.getElementById('scramble-cube-label').textContent = currentCube;
+        }
+
+        // =========================================================================
+        // 3. LOGIC ĐỒNG HỒ BẤM GIỜ STACKMAT 2 TAY (CHUẨN CẢM ỨNG ĐA ĐIỂM)
+        // =========================================================================
+        const touchZone = document.getElementById('timer-touch-zone');
+        const timerDisplay = document.getElementById('timer-display');
+        const statusText = document.getElementById('timer-status-text');
+        const ledRed = document.getElementById('led-red');
+        const ledGreen = document.getElementById('led-green');
+        const padLeft = document.getElementById('pad-left');
+        const padRight = document.getElementById('pad-right');
+
+        function formatTime(ms) {
+            if (ms === 'DNF') return 'DNF';
+            const totalSeconds = ms / 1000;
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = (totalSeconds % 60).toFixed(3);
+            if (minutes > 0) {
+                return `${minutes}:${seconds.padStart(6, '0')}`;
+            }
+            return seconds;
+        }
+
+        function updateTimerLoop() {
+            if (timerState !== 'RUNNING') return;
+            elapsedTime = performance.now() - startTime;
+            timerDisplay.textContent = formatTime(elapsedTime);
+            animationFrameId = requestAnimationFrame(updateTimerLoop);
+        }
+
+        function setVisualState(state) {
+            // Reset đèn LED & màu chữ
+            ledRed.className = 'w-3 h-3 rounded-full bg-red-950 border border-red-800 transition-all';
+            ledGreen.className = 'w-3 h-3 rounded-full bg-emerald-950 border border-emerald-800 transition-all';
+            timerDisplay.classList.remove('text-red-500', 'text-emerald-400', 'text-white');
+
+            if (state === 'IDLE') {
+                timerDisplay.classList.add('text-white');
+                statusText.textContent = twoHandsMode
+                    ? 'Đặt đồng thời 2 tay lên 2 ô dưới để chuẩn bị'
+                    : 'Chạm và giữ vào màn hình để chuẩn bị';
+                setFocusMode(false);
+            } else if (state === 'HOLDING') {
+                ledRed.className = 'w-3 h-3 rounded-full bg-red-500 shadow-[0_0_10px_#ef4444] transition-all';
+                timerDisplay.classList.add('text-red-500');
+                statusText.textContent = 'Giữ yên 2 tay... Chờ đèn Xanh lá!';
+            } else if (state === 'READY') {
+                ledGreen.className = 'w-3 h-3 rounded-full bg-emerald-400 shadow-[0_0_12px_#10b981] transition-all';
+                timerDisplay.classList.add('text-emerald-400');
+                statusText.textContent = 'SẴN SÀNG! Nhấc 2 tay ra để bắt đầu';
+                if (navigator.vibrate) navigator.vibrate(25); // Rung nhẹ báo sẵn sàng trên điện thoại
+            } else if (state === 'RUNNING') {
+                ledGreen.className = 'w-3 h-3 rounded-full bg-emerald-400 animate-pulse';
+                timerDisplay.classList.add('text-white');
+                statusText.textContent = 'ĐANG CHẠY — Chạm bất kỳ đâu để DỪNG!';
+                setFocusMode(true);
+            }
+        }
+
+        // Làm mờ các thanh menu phụ khi đồng hồ đang chạy để tránh bấm nhầm
+        function setFocusMode(isRunning) {
+            const dimTargets = ['main-header', 'scramble-box', 'stats-panel', 'bottom-nav'];
+            dimTargets.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.style.opacity = isRunning ? '0.15' : '1';
+                    el.style.pointerEvents = isRunning ? 'none' : 'auto';
+                }
+            });
+        }
+
+        function startHoldCheck() {
+            if (timerState === 'HOLDING' || timerState === 'READY') return;
+            timerState = 'HOLDING';
+            hideLastSolveActions();
+            setVisualState('HOLDING');
+
+            clearTimeout(holdTimeout);
+            holdTimeout = setTimeout(() => {
+                if (timerState === 'HOLDING') {
+                    timerState = 'READY';
+                    setVisualState('READY');
+                }
+            }, 450); // Giữ đủ 0.45 giây như máy Stackmat thật
+        }
+
+        function cancelHold() {
+            clearTimeout(holdTimeout);
+            timerState = 'IDLE';
+            setVisualState('IDLE');
+        }
+
+        function startTimer() {
+            clearTimeout(holdTimeout);
+            timerState = 'RUNNING';
+            startTime = performance.now();
+            setVisualState('RUNNING');
+            animationFrameId = requestAnimationFrame(updateTimerLoop);
+        }
+
+        function stopTimer() {
+            cancelAnimationFrame(animationFrameId);
+            elapsedTime = performance.now() - startTime;
+            timerState = 'STOPPED';
+            timerDisplay.textContent = formatTime(elapsedTime);
+            setVisualState('IDLE');
+            statusText.textContent = 'Hoàn thành! Đặt 2 tay để giải lượt tiếp theo';
+
+            if (navigator.vibrate) navigator.vibrate([30, 40, 30]);
+
+            // Lưu kết quả vào lịch sử
+            const record = {
+                id: Date.now(),
+                time: Math.round(elapsedTime),
+                penalty: null, // null | '+2' | 'DNF'
+                scramble: currentScramble
+            };
+            solveHistory[currentCube].unshift(record);
+            saveHistory();
+            renderStatsAndHistory();
+            showLastSolveActions();
+            generateNewScramble();
+        }
+
+        // Xử lý cảm ứng đa điểm (Touch Events) trên vùng đồng hồ
+        function evaluateTouches(touches) {
+            const rect = touchZone.getBoundingClientRect();
+            const midX = rect.left + rect.width / 2;
+
+            let leftActive = false;
+            let rightActive = false;
+
+            for (let i = 0; i < touches.length; i++) {
+                const t = touches[i];
+                // Kiểm tra ngón tay nằm trong vùng cảm ứng
+                if (t.clientX >= rect.left && t.clientX <= rect.right &&
+                    t.clientY >= rect.top && t.clientY <= rect.bottom) {
+                    if (t.clientX < midX) leftActive = true;
+                    else rightActive = true;
+                }
+            }
+
+            leftHandDown = leftActive;
+            rightHandDown = rightActive;
+
+            // Cập nhật hiệu ứng sáng lên trên 2 ô bàn tay
+            padLeft.classList.toggle('active', leftHandDown && timerState !== 'READY');
+            padRight.classList.toggle('active', rightHandDown && timerState !== 'READY');
+            padLeft.classList.toggle('ready', leftHandDown && timerState === 'READY');
+            padRight.classList.toggle('ready', rightHandDown && timerState === 'READY');
+
+            const handsReady = twoHandsMode ? (leftHandDown && rightHandDown) : (leftHandDown || rightHandDown);
+            const allHandsReleased = !leftHandDown && !rightHandDown;
+
+            if (timerState === 'IDLE' || timerState === 'STOPPED') {
+                if (handsReady) {
+                    startHoldCheck();
+                } else if (leftHandDown || rightHandDown) {
+                    statusText.textContent = 'Hãy đặt nốt tay còn lại lên ô kia!';
+                }
+            } else if (timerState === 'HOLDING') {
+                if (!handsReady) {
+                    cancelHold();
+                }
+            } else if (timerState === 'READY') {
+                if (allHandsReleased) {
+                    startTimer();
+                }
+            }
+        }
+
+        touchZone.addEventListener('touchstart', (e) => {
+            // Không chặn sự kiện nếu bấm vào các nút +2 / DNF / Xóa
+            if (e.target.closest('button')) return;
+            e.preventDefault();
+
+            // Nếu đồng hồ đang chạy -> chạm bất kỳ đâu là DỪNG ngay lập tức
+            if (timerState === 'RUNNING') {
+                stopTimer();
+                return;
+            }
+            evaluateTouches(e.touches);
+        }, { passive: false });
+
+        touchZone.addEventListener('touchmove', (e) => {
+            if (e.target.closest('button')) return;
+            e.preventDefault();
+            if (timerState === 'RUNNING') return;
+            evaluateTouches(e.touches);
+        }, { passive: false });
+
+        touchZone.addEventListener('touchend', (e) => {
+            if (e.target.closest('button')) return;
+            e.preventDefault();
+            if (timerState === 'RUNNING') return;
+            evaluateTouches(e.touches);
+        }, { passive: false });
+
+        // Hỗ trợ thêm phím Spacebar & Chuột cho người dùng test trên máy tính
+        let spacePressed = false;
+        window.addEventListener('keydown', (e) => {
+            if (currentTab !== 'timer') return;
+            if (e.code === 'Space') {
+                e.preventDefault();
+                if (timerState === 'RUNNING') {
+                    stopTimer();
+                    spacePressed = true;
+                    return;
+                }
+                if (!spacePressed && (timerState === 'IDLE' || timerState === 'STOPPED')) {
+                    spacePressed = true;
+                    padLeft.classList.add('active');
+                    padRight.classList.add('active');
+                    startHoldCheck();
+                }
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                spacePressed = false;
+                padLeft.classList.remove('active', 'ready');
+                padRight.classList.remove('active', 'ready');
+                if (timerState === 'HOLDING') {
+                    cancelHold();
+                } else if (timerState === 'READY') {
+                    startTimer();
+                }
+            }
+        });
+
+        // Hỗ trợ click chuột trên máy tính khi bật chế độ 1 tay
+        touchZone.addEventListener('mousedown', (e) => {
+            if (e.target.closest('button') || e.sourceCapabilities?.firesTouchEvents) return;
+            if (timerState === 'RUNNING') {
+                stopTimer();
+                return;
+            }
+            if (!twoHandsMode) {
+                padLeft.classList.add('active');
+                padRight.classList.add('active');
+                startHoldCheck();
+            }
+        });
+
+        window.addEventListener('mouseup', (e) => {
+            if (e.sourceCapabilities?.firesTouchEvents) return;
+            if (!twoHandsMode) {
+                padLeft.classList.remove('active', 'ready');
+                padRight.classList.remove('active', 'ready');
+                if (timerState === 'HOLDING') cancelHold();
+                else if (timerState === 'READY') startTimer();
+            }
+        });
+
+        function toggleTouchMode() {
+            twoHandsMode = !twoHandsMode;
+            const label = document.getElementById('mode-label');
+            const dot = document.getElementById('mode-dot');
+            const handsContainer = document.getElementById('hands-container');
+
+            if (twoHandsMode) {
+                label.textContent = 'Chế độ: 2 Tay';
+                dot.className = 'w-2 h-2 rounded-full bg-emerald-400';
+                handsContainer.classList.remove('opacity-40');
+            } else {
+                label.textContent = 'Chế độ: 1 Tay';
+                dot.className = 'w-2 h-2 rounded-full bg-amber-400';
+                handsContainer.classList.add('opacity-40');
+            }
+            setVisualState('IDLE');
+        }
+
+        // =========================================================================
+        // 4. QUẢN LÝ LỊCH SỬ, PENALTY (+2 / DNF) VÀ THỐNG KÊ AO5 / AO12
+        // =========================================================================
+        function saveHistory() {
+            localStorage.setItem('sc_history_v1', JSON.stringify(solveHistory));
+        }
+
+        function getEffectiveTime(record) {
+            if (record.penalty === 'DNF') return Infinity;
+            if (record.penalty === '+2') return record.time + 2000;
+            return record.time;
+        }
+
+        function formatRecordDisplay(record) {
+            if (record.penalty === 'DNF') return 'DNF';
+            if (record.penalty === '+2') return formatTime(record.time + 2000) + '+';
+            return formatTime(record.time);
+        }
+
+        function calculateAverage(records, count) {
+            if (records.length < count) return '--';
+            const slice = records.slice(0, count).map(getEffectiveTime);
+            const dnfCount = slice.filter(t => t === Infinity).length;
+            if (dnfCount >= 2) return 'DNF';
+
+            // Loại bỏ 1 thành tích tốt nhất và 1 thành tích tệ nhất theo luật WCA
+            slice.sort((a, b) => a - b);
+            const trimmed = slice.slice(1, count - 1);
+            const sum = trimmed.reduce((acc, val) => acc + val, 0);
+            return formatTime(sum / trimmed.length);
+        }
+
+        function renderStatsAndHistory() {
+            const list = solveHistory[currentCube] || [];
+            document.getElementById('solve-count').textContent = list.length;
+
+            // Tính Best
+            const validTimes = list.map(getEffectiveTime).filter(t => t !== Infinity);
+            document.getElementById('stat-best').textContent = validTimes.length > 0 ? formatTime(Math.min(...validTimes)) : '--';
+
+            // Tính Ao5 & Ao12
+            document.getElementById('stat-ao5').textContent = calculateAverage(list, 5);
+            document.getElementById('stat-ao12').textContent = calculateAverage(list, 12);
+
+            // Render danh sách thẻ thời gian
+            const historyContainer = document.getElementById('history-list');
+            if (list.length === 0) {
+                historyContainer.innerHTML = '<span class="text-xs text-gray-500 italic">Chưa có thành tích nào cho khối này.</span>';
+                return;
+            }
+
+            historyContainer.innerHTML = list.map((item, idx) => {
+                const isBest = getEffectiveTime(item) === Math.min(...validTimes) && validTimes.length > 0;
+                const badgeClass = item.penalty === 'DNF'
+                    ? 'border-red-800/70 bg-red-950/40 text-red-400'
+                    : isBest
+                        ? 'border-emerald-700/70 bg-emerald-950/40 text-emerald-300'
+                        : 'border-gray-800 bg-gray-950/80 text-gray-200';
+                return `
+                    <div class="shrink-0 px-2.5 py-1.5 rounded-xl border ${badgeClass} font-mono text-xs font-bold flex items-center gap-1.5">
+                        <span class="text-[10px] text-gray-500">#${list.length - idx}</span>
+                        <span>${formatRecordDisplay(item)}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function showLastSolveActions() {
+            const box = document.getElementById('last-solve-actions');
+            box.classList.remove('opacity-0', 'pointer-events-none');
+        }
+
+        function hideLastSolveActions() {
+            const box = document.getElementById('last-solve-actions');
+            box.classList.add('opacity-0', 'pointer-events-none');
+        }
+
+        function togglePenalty(type) {
+            const list = solveHistory[currentCube];
+            if (!list || list.length === 0) return;
+            const latest = list[0];
+            latest.penalty = (latest.penalty === type) ? null : type;
+            timerDisplay.textContent = formatRecordDisplay(latest);
+            saveHistory();
+            renderStatsAndHistory();
+        }
+
+        function deleteLastSolve() {
+            const list = solveHistory[currentCube];
+            if (!list || list.length === 0) return;
+            list.shift();
+            timerDisplay.textContent = '0.000';
+            hideLastSolveActions();
+            saveHistory();
+            renderStatsAndHistory();
+        }
+
+        function openClearModal() {
+            document.getElementById('modal-cube-name').textContent = currentCube;
+            const modal = document.getElementById('confirm-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeClearModal() {
+            const modal = document.getElementById('confirm-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function confirmClearHistory() {
+            solveHistory[currentCube] = [];
+            saveHistory();
+            renderStatsAndHistory();
+            hideLastSolveActions();
+            timerDisplay.textContent = '0.000';
+            closeClearModal();
+        }
+
+        // =========================================================================
+        // 5. DỮ LIỆU CÔNG THỨC & LỘ TRÌNH GIẢI NHANH (2x2 ĐẾN 6x6) + KHỐI LẬP PHƯƠNG 3D
+        // =========================================================================
+        function createIsometricCubeSVG(size, options = {}) {
+            const {
+                topPattern = 'full',    
+                frontColors = null,     
+                rightColors = null,     
+                highlightParity = false 
+            } = options;
+
+            const C = {
+                Y: '#facc15', // Vàng (Mặt trên U)
+                W: '#f8fafc', // Trắng
+                R: '#ef4444', // Đỏ (Mặt trước F)
+                O: '#f97316', // Cam
+                B: '#3b82f6', // Xanh dương
+                G: '#10b981', // Xanh lá (Mặt phải R)
+                D: '#1e293b'  // Xám tối (Chưa lật)
+            };
+
+            const getTopColor = (r, c) => {
+                const last = size - 1;
+                const isCorner = (r === 0 || r === last) && (c === 0 || c === last);
+                const isCenter = r > 0 && r < last && c > 0 && c < last;
+                const isEdge = !isCorner && !isCenter;
+
+                if (topPattern === 'full') return C.Y;
+                if (topPattern === 'center') return isCenter ? C.Y : C.D;
+                if (topPattern === 'cross') return (!isCorner) ? C.Y : C.D;
+                if (topPattern === 'line') return (r === Math.floor(size / 2) && !isCorner) || isCenter ? C.Y : C.D;
+                if (topPattern === 'l-shape') {
+                    const mid = Math.floor(size / 2);
+                    return isCenter || (r === 0 && c === mid) || (r === mid && c === 0) ? C.Y : C.D;
+                }
+                if (topPattern === 'sune') {
+                    if (r === last && c === 0) return C.Y;
+                    return !isCorner ? C.Y : C.D;
+                }
+                if (topPattern === 'antisune') {
+                    if (r === 0 && c === last) return C.Y;
+                    return !isCorner ? C.Y : C.D;
+                }
+                if (topPattern === 't' || topPattern === 'u') {
+                    if ((r === 0 && c === last) || (r === last && c === last)) return C.Y;
+                    return !isCorner ? C.Y : C.D;
+                }
+                if (topPattern === 'l-2x2') {
+                    return ((r === 0 && c === last) || (r === last && c === 0)) ? C.Y : C.D;
+                }
+                if (topPattern === 'pi' || topPattern === 'h') {
+                    return !isCorner ? C.Y : C.D;
+                }
+                if (topPattern === 'parity-oll') {
+                    if (r === last && isEdge) return C.R;
+                    return C.Y;
+                }
+                if (topPattern === 'parity-inner') {
+                    if (r === last && (c === 1 || c === last - 1)) return C.R;
+                    return C.Y;
+                }
+                return C.Y;
+            };
+
+            const topOrigin = [40, 8];
+            const uVec = [-30 / size, 16 / size];
+            const vVec = [30 / size, 16 / size];
+            const dVec = [0, 32 / size];
+
+            const pt = (ox, oy, a, b, d = 0) => [
+                (ox + a * uVec[0] + b * vVec[0] + d * dVec[0]).toFixed(1),
+                (oy + a * uVec[1] + b * vVec[1] + d * dVec[1]).toFixed(1)
+            ];
+
+            let polygons = '';
+            const gap = size >= 5 ? 0.05 : 0.07;
+
+            // 1. Mặt TRÊN (Top - U)
+            for (let r = 0; r < size; r++) {
+                for (let c = 0; c < size; c++) {
+                    const p1 = pt(topOrigin[0], topOrigin[1], r + gap, c + gap);
+                    const p2 = pt(topOrigin[0], topOrigin[1], r + gap, c + 1 - gap);
+                    const p3 = pt(topOrigin[0], topOrigin[1], r + 1 - gap, c + 1 - gap);
+                    const p4 = pt(topOrigin[0], topOrigin[1], r + 1 - gap, c + gap);
+                    const fill = getTopColor(r, c);
+                    polygons += `<polygon points="${p1} ${p2} ${p3} ${p4}" fill="${fill}" stroke="#090d16" stroke-width="0.8"/>`;
+                }
+            }
+
+            // 2. Mặt TRƯỚC (Front - F)
+            for (let k = 0; k < size; k++) {
+                for (let c = 0; c < size; c++) {
+                    const p1 = pt(topOrigin[0], topOrigin[1], size, c + gap, k + gap);
+                    const p2 = pt(topOrigin[0], topOrigin[1], size, c + 1 - gap, k + gap);
+                    const p3 = pt(topOrigin[0], topOrigin[1], size, c + 1 - gap, k + 1 - gap);
+                    const p4 = pt(topOrigin[0], topOrigin[1], size, c + gap, k + 1 - gap);
+                    let fill = C.R;
+                    if (k === 0 && frontColors && frontColors[c]) fill = C[frontColors[c]] || C.R;
+                    else if (highlightParity && k === 0 && c > 0 && c < size - 1) fill = C.Y;
+                    polygons += `<polygon points="${p1} ${p2} ${p3} ${p4}" fill="${fill}" stroke="#090d16" stroke-width="0.8"/>`;
+                }
+            }
+
+            // 3. Mặt BÊN PHẢI (Right - R)
+            for (let k = 0; k < size; k++) {
+                for (let r = 0; r < size; r++) {
+                    const rr = size - 1 - r;
+                    const p1 = pt(topOrigin[0], topOrigin[1], rr + gap, size, k + gap);
+                    const p2 = pt(topOrigin[0], topOrigin[1], rr + 1 - gap, size, k + gap);
+                    const p3 = pt(topOrigin[0], topOrigin[1], rr + 1 - gap, size, k + 1 - gap);
+                    const p4 = pt(topOrigin[0], topOrigin[1], rr + gap, size, k + 1 - gap);
+                    let fill = C.G;
+                    if (k === 0 && rightColors && rightColors[r]) fill = C[rightColors[r]] || C.G;
+                    polygons += `<polygon points="${p1} ${p2} ${p3} ${p4}" fill="${fill}" stroke="#090d16" stroke-width="0.8"/>`;
+                }
+            }
+
+            // Khung hiển thị SVG to rõ (w-24 h-24 trên mobile, w-28 h-28 trên PC)
+            return `
+                <svg viewBox="0 0 80 80" class="w-24 h-24 sm:w-28 sm:h-28 shrink-0 bg-gray-950 rounded-2xl border-2 border-gray-700/80 p-1 shadow-lg">
+                    ${polygons}
+                </svg>
+            `;
+        }
+
+        function createHeroCubePreview(size) {
+            return `
+                <div class="flex flex-col items-center justify-center bg-gray-950 border border-gray-800 rounded-2xl p-3 shrink-0">
+                    ${createIsometricCubeSVG(size, { topPattern: 'full' }).replace('w-24 h-24 sm:w-28 sm:h-28 shrink-0 bg-gray-950 rounded-2xl border-2 border-gray-700/80 p-1 shadow-lg', 'w-32 h-32 sm:w-36 sm:h-36 shrink-0 bg-transparent border-0')}
+                    <div class="flex items-center gap-2 text-xs font-mono font-bold mt-2 bg-gray-900 px-3 py-1 rounded-full border border-gray-800">
+                        <span class="text-yellow-400">U: Trên</span>
+                        <span class="text-red-400">F: Trước</span>
+                        <span class="text-emerald-400">R: Phải</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        const ALGO_DATABASE = {
+            '2x2': {
+                title: 'Công Thức Tóm Tắt 2x2 (Ortega Rút Gọn)',
+                summary: 'Cách giải nhanh nhất: Làm 1 mặt bất kỳ → Lật mặt đối diện (OLL) → Hoán vị 2 tầng (PBL).',
+                steps: [
+                    {
+                        stepTitle: 'Bước 1: Lật full mặt vàng (OLL)',
+                        desc: 'Chọn 2 công thức cơ bản và dễ nhớ nhất để lật toàn bộ mặt vàng lên trên:',
+                        algos: [
+                            { name: 'Sune (1 góc vàng)', alg: "R U R' U R U2 R'", note: 'Đặt góc vàng ở dưới trái, xoay là xong', svg: createIsometricCubeSVG(2, { topPattern: 'sune', frontColors: ['R', 'Y'] }) },
+                            { name: 'H-Case (2 cặp đối diện)', alg: "R2 U2 R U2 R2", note: 'Dùng khi có 2 cặp đèn pha đối xứng', svg: createIsometricCubeSVG(2, { topPattern: 'h', frontColors: ['Y', 'Y'] }) }
+                        ]
+                    },
+                    {
+                        stepTitle: 'Bước 2: Hoán vị 2 tầng (PBL)',
+                        desc: 'Sắp xếp lại các viên để hoàn thành khối:',
+                        algos: [
+                            { name: 'Đổi chéo cả 2 tầng (Siêu nhanh)', alg: "R2 F2 R2", note: 'Dùng khi cả 2 tầng đều bị lệch chéo', svg: createIsometricCubeSVG(2, { topPattern: 'full', frontColors: ['R', 'O'] }) },
+                            { name: 'Thanh trùng mặt trước', alg: "R2 U' B2 U2 R2 U' R2", note: 'Đặt thanh trùng màu ở mặt trước (F)', svg: createIsometricCubeSVG(2, { topPattern: 'full', frontColors: ['R', 'R'] }) }
+                        ]
+                    }
+                ]
+            },
+            '3x3': {
+                title: 'Công Thức Tóm Tắt 3x3 (CFOP Cốt Lõi)',
+                summary: 'Lộ trình 4 bước chuẩn WCA cho 3x3 với các công thức ngắn gọn nhất.',
+                steps: [
+                    {
+                        stepTitle: 'Bước 1 & 2: Cross Đáy & F2L Cơ Bản',
+                        desc: 'Làm chữ thập trắng ở đáy, sau đó ghép cặp Góc + Cạnh đưa vào khe:',
+                        algos: [
+                            { name: 'Đưa cặp vào khe phải', alg: "U R U' R'", note: 'Công thức cơ bản nhất để lắp F2L', svg: createIsometricCubeSVG(3, { topPattern: 'center', frontColors: ['D', 'D', 'R'] }) },
+                            { name: 'Tách cặp khi kẹt', alg: "R U R'", note: 'Nâng lên và tách 2 viên ra', svg: createIsometricCubeSVG(3, { topPattern: 'center', frontColors: ['D', 'R', 'R'] }) }
+                        ]
+                    },
+                    {
+                        stepTitle: 'Bước 3: Lật mặt vàng (2-Look OLL)',
+                        desc: 'Tạo chữ thập vàng rồi lật full:',
+                        algos: [
+                            { name: 'Tạo Chữ Thập (Đường thẳng)', alg: "F (R U R' U') F'", note: 'Đặt thanh vàng nằm ngang trước mặt', svg: createIsometricCubeSVG(3, { topPattern: 'line', frontColors: ['R', 'Y', 'R'] }) },
+                            { name: 'Lật full mặt vàng (Sune)', alg: "R U R' U R U2 R'", note: 'Đưa 1 góc vàng xuống dưới trái', svg: createIsometricCubeSVG(3, { topPattern: 'sune', frontColors: ['R', 'R', 'Y'] }) }
+                        ]
+                    },
+                    {
+                        stepTitle: 'Bước 4: Hoán vị tầng 3 (PLL)',
+                        desc: 'Đổi chỗ các viên góc và cạnh ở tầng trên cùng:',
+                        algos: [
+                            { name: 'T-Perm (Đổi 2 góc & 2 cạnh)', alg: "R U R' U' R' F R2 U' R' U' R U R' F'", note: 'Đặt đèn pha sang bên trái', svg: createIsometricCubeSVG(3, { topPattern: 'full', frontColors: ['R', 'R', 'O'] }) },
+                            { name: 'H-Perm (Đổi chéo 4 cạnh)', alg: "M2 U M2 U2 M2 U M2", note: 'M2 là xoay lớp giữa 2 lần', svg: createIsometricCubeSVG(3, { topPattern: 'full', frontColors: ['R', 'O', 'R'] }) }
+                        ]
+                    }
+                ]
+            },
+            '4x4': {
+                title: 'Công Thức Tóm Tắt 4x4 (Giải Tâm + 2 Lỗi Parity)',
+                summary: 'Sau khi làm 6 tâm và ghép 12 cạnh, bạn chỉ cần nhớ 2 công thức xử lý lỗi đặc trưng của 4x4:',
+                steps: [
+                    {
+                        stepTitle: 'Xử lý lỗi Parity trên 4x4',
+                        desc: 'Hai lỗi bắt buộc phải thuộc công thức khi chơi 4x4:',
+                        algos: [
+                            { name: 'OLL Parity (Lật 1 cặp cạnh)', alg: "Rw U2 x Rw U2 Rw U2 Rw' U2 Lw U2 Rw' U2 Rw U2 Rw' U2 Rw'", note: 'Đặt cạnh bị lỗi ở mặt trước trên cùng', svg: createIsometricCubeSVG(4, { topPattern: 'parity-oll', highlightParity: true }) },
+                            { name: 'PLL Parity (Đổi chéo 2 cạnh)', alg: "2R2 U2 2R2 Uw2 2R2 Uw2", note: 'Xoay lớp thứ 2 từ phải sang 180 độ', svg: createIsometricCubeSVG(4, { topPattern: 'full', frontColors: ['R', 'O', 'O', 'R'] }) }
+                        ]
+                    }
+                ]
+            },
+            '5x5': {
+                title: 'Công Thức Tóm Tắt 5x5 (Tâm & Lỗi Cạnh)',
+                summary: 'Tương tự 4x4, khối 5x5 chỉ có thêm 1 lỗi Edge Parity ở lớp giữa:',
+                steps: [
+                    {
+                        stepTitle: 'Lỗi Edge Parity 5x5',
+                        desc: 'Xảy ra ở bộ cạnh cuối cùng:',
+                        algos: [
+                            { name: 'Edge Parity 5x5', alg: "Rw U2 x Rw U2 Rw U2 Rw' U2 Lw U2 Rw' U2 Rw U2 Rw' U2 Rw'", note: 'Giống công thức OLL Parity của 4x4', svg: createIsometricCubeSVG(5, { topPattern: 'parity-inner', frontColors: ['R', 'Y', 'R', 'Y', 'R'] }) }
+                        ]
+                    }
+                ]
+            },
+            '6x6': {
+                title: 'Công Thức Tóm Tắt 6x6 (Double Parity)',
+                summary: 'Khối chẵn lớn kết hợp cả lỗi lật cạnh trong và lật cạnh ngoài:',
+                steps: [
+                    {
+                        stepTitle: 'Các lỗi Parity trên 6x6',
+                        desc: 'Sử dụng xoay 3 tầng (3Rw) cho lớp ngoài và 2 tầng (Rw) cho lớp trong:',
+                        algos: [
+                            { name: 'Outer OLL Parity (3 tầng)', alg: "3Rw U2 x 3Rw U2 3Rw U2 3Rw' U2 3Lw U2 3Rw' U2 3Rw U2 3Rw' U2 3Rw'", note: 'Lật cụm 4 viên cạnh ngoài', svg: createIsometricCubeSVG(6, { topPattern: 'parity-oll', highlightParity: true }) },
+                            { name: '6x6 PLL Parity', alg: "3Rw2 R2 U2 3Rw2 R2 Uw2 U2 3Rw2 R2 Uw2 U2", note: 'Đổi chéo cụm cạnh tầng trên', svg: createIsometricCubeSVG(6, { topPattern: 'full', frontColors: ['R', 'O', 'O', 'O', 'O', 'R'] }) }
+                        ]
+                    }
+                ]
+            }
+        };
+
+        function copyAlgorithm(text) {
+            const tempInput = document.createElement('textarea');
+            tempInput.value = text;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+
+            const toast = document.getElementById('toast');
+            toast.classList.remove('opacity-0');
+            setTimeout(() => toast.classList.add('opacity-0'), 1600);
+        }
+
+        function renderAlgorithms() {
+            const data = ALGO_DATABASE[currentCube];
+            const cubeSize = parseInt(currentCube[0], 10);
+            const container = document.getElementById('algo-content-container');
+
+            let html = `
+                <div class="bg-gradient-to-r from-blue-950/80 to-indigo-950/60 border border-blue-800/60 rounded-2xl p-4 flex flex-col sm:flex-row items-center gap-4">
+                    ${createHeroCubePreview(cubeSize)}
+                    <div class="flex-1 text-center sm:text-left">
+                        <div class="inline-block px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 text-[11px] font-bold mb-1.5">
+                            KHỐI LẬP PHƯƠNG ${currentCube} • LỘ TRÌNH TỐI ƯU
+                        </div>
+                        <h2 class="text-base sm:text-lg font-extrabold text-white mb-1">${data.title}</h2>
+                        <p class="text-xs sm:text-sm text-gray-300 leading-relaxed">${data.summary}</p>
+                    </div>
+                </div>
+            `;
+
+            data.steps.forEach((step, stepIdx) => {
+                html += `
+                    <div class="space-y-2.5">
+                        <div class="px-1">
+                            <h3 class="text-sm sm:text-base font-extrabold text-amber-400 flex items-center gap-2">
+                                <span class="w-5 h-5 rounded-full bg-amber-500/20 text-amber-300 text-xs flex items-center justify-center">${stepIdx + 1}</span>
+                                ${step.stepTitle}
+                            </h3>
+                            <p class="text-xs text-gray-400 mt-1 leading-relaxed">${step.desc}</p>
+                        </div>
+                        <div class="grid grid-cols-1 gap-2.5">
+                            ${step.algos.map(a => `
+                                <div class="bg-gray-900 border border-gray-800 hover:border-gray-700 rounded-2xl p-3 flex items-center gap-3 transition">
+                                    ${a.svg}
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-center justify-between gap-2">
+                                            <h4 class="text-xs sm:text-sm font-bold text-white truncate">${a.name}</h4>
+                                            <button onclick="copyAlgorithm(\`${a.alg.replace(/'/g, "\\'")}\`)" class="shrink-0 px-2 py-1 rounded-lg bg-gray-800 hover:bg-gray-700 text-[11px] text-blue-400 font-semibold active:scale-95 transition">
+                                                Chép
+                                            </button>
+                                        </div>
+                                        <div class="mt-1 px-2.5 py-1.5 rounded-xl bg-gray-950 border border-gray-800/90 font-mono text-xs sm:text-sm font-bold text-emerald-400 break-words">
+                                            ${a.alg}
+                                        </div>
+                                        <p class="text-[11px] text-gray-400 mt-1">${a.note}</p>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function toggleNotationGuide() {
+            const body = document.getElementById('notation-body');
+            const chevron = document.getElementById('notation-chevron');
+            body.classList.toggle('hidden');
+            chevron.classList.toggle('rotate-180');
+        }
+
+        // =========================================================================
+        // 6. ĐIỀU HƯỚNG TAB & CHỌN KHỐI RUBIK (2x2 -> 6x6)
+        // =========================================================================
+        function selectCube(cube) {
+            currentCube = cube;
+            localStorage.setItem('sc_current_cube', cube);
+
+            document.querySelectorAll('.cube-btn').forEach(btn => {
+                if (btn.dataset.cube === cube) {
+                    btn.className = 'cube-btn py-1.5 rounded-lg text-xs sm:text-sm font-extrabold bg-blue-600 text-white shadow-md shadow-blue-600/30 transition';
+                } else {
+                    btn.className = 'cube-btn py-1.5 rounded-lg text-xs sm:text-sm font-bold text-gray-400 hover:text-white transition';
+                }
+            });
+
+            if (timerState !== 'RUNNING') {
+                timerDisplay.textContent = '0.000';
+                hideLastSolveActions();
+            }
+
+            generateNewScramble();
+            renderStatsAndHistory();
+            renderAlgorithms();
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            const tabTimer = document.getElementById('tab-timer');
+            const tabAlgos = document.getElementById('tab-algorithms');
+            const navTimer = document.getElementById('nav-timer');
+            const navAlgos = document.getElementById('nav-algorithms');
+
+            if (tab === 'timer') {
+                tabTimer.classList.remove('hidden');
+                tabTimer.classList.add('flex');
+                tabAlgos.classList.add('hidden');
+                tabAlgos.classList.remove('flex');
+
+                navTimer.className = 'nav-btn flex flex-col items-center justify-center py-2 px-3 rounded-2xl bg-blue-600 text-white font-bold text-xs shadow-lg shadow-blue-600/20 transition';
+                navAlgos.className = 'nav-btn flex flex-col items-center justify-center py-2 px-3 rounded-2xl bg-gray-800/80 text-gray-400 hover:text-white font-bold text-xs transition';
+            } else {
+                tabAlgos.classList.remove('hidden');
+                tabAlgos.classList.add('flex');
+                tabTimer.classList.add('hidden');
+                tabTimer.classList.remove('flex');
+
+                navAlgos.className = 'nav-btn flex flex-col items-center justify-center py-2 px-3 rounded-2xl bg-blue-600 text-white font-bold text-xs shadow-lg shadow-blue-600/20 transition';
+                navTimer.className = 'nav-btn flex flex-col items-center justify-center py-2 px-3 rounded-2xl bg-gray-800/80 text-gray-400 hover:text-white font-bold text-xs transition';
+            }
+        }
+
+        // Khởi chạy ứng dụng ngay khi tải xong
+        window.addEventListener('DOMContentLoaded', () => {
+            selectCube(currentCube);
+            switchTab('timer');
+        });
+    </script>
+</body>
+</html>
